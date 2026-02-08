@@ -2,31 +2,37 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../be/service';
 import { Card, Badge } from '../../components/ui';
+import { RefreshCw } from 'lucide-react';
 
 export default function CitizenDashboard() {
     const { user } = useAuth();
     const [entitlements, setEntitlements] = useState({});
     const [items, setItems] = useState([]);
     const [shop, setShop] = useState(null);
+    const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const [entData, itemsData, shopData, ordersData] = await Promise.all([
+                api.getEntitlements(user.cardType),
+                api.getAllItems(),
+                api.getShop(user.shopId),
+                api.getUserOrders(user.id)
+            ]);
+            setEntitlements(entData);
+            setItems(itemsData);
+            setShop(shopData);
+            setOrders(ordersData);
+        } catch (error) {
+            console.error("Failed to fetch dashboard data", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [entData, itemsData, shopData] = await Promise.all([
-                    api.getEntitlements(user.cardType),
-                    api.getAllItems(),
-                    api.getShop(user.shopId)
-                ]);
-                setEntitlements(entData);
-                setItems(itemsData);
-                setShop(shopData);
-            } catch (error) {
-                console.error("Failed to fetch dashboard data", error);
-            } finally {
-                setLoading(false);
-            }
-        };
         if (user) fetchData();
     }, [user]);
 
@@ -43,39 +49,63 @@ export default function CitizenDashboard() {
                     <h2 className="text-2xl font-bold text-gray-800">My Entitlements</h2>
                     <p className="text-sm text-gray-500">Card Type: <span className="font-semibold text-blue-600">{user.cardType}</span></p>
                 </div>
-                <div className="text-right">
-                    <p className="text-sm text-gray-500">Assigned Shop</p>
-                    <p className="font-medium">{shop?.name}</p>
+                <div className="text-right flex items-center gap-4">
+                    <div>
+                        <p className="text-sm text-gray-500">Assigned Shop</p>
+                        <p className="font-medium">{shop?.name}</p>
+                    </div>
+                    <button
+                        onClick={fetchData}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                        title="Refresh Data"
+                    >
+                        <RefreshCw size={20} />
+                    </button>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {Object.entries(entitlements).map(([itemId, qty]) => (
-                    <Card key={itemId} className="flex flex-col justify-between hover:shadow-md transition-shadow">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="text-3xl bg-gray-50 p-2 rounded-full">{getItemImage(itemId)}</div>
-                            <Badge variant="success">Available</Badge>
-                        </div>
-                        <div>
-                            <h3 className="font-semibold text-lg">{getItemName(itemId)}</h3>
-                            <div className="flex justify-between items-end mt-2">
-                                <div>
-                                    <p className="text-xs text-gray-500">Monthly Quota</p>
-                                    <p className="text-xl font-bold text-gray-800">{qty} <span className="text-sm font-normal text-gray-500">{getItemUnit(itemId)}</span></p>
+                {Object.entries(entitlements).map(([itemId, qty]) => {
+                    // Calculate collected amount
+                    const collected = orders
+                        .filter(o => o.status === 'paid' || o.status === 'collected')
+                        .reduce((acc, order) => acc + (order.items[itemId] || 0), 0);
+
+                    const progress = Math.min((collected / qty) * 100, 100);
+
+                    return (
+                        <Card key={itemId} className="flex flex-col justify-between hover:shadow-md transition-shadow">
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="text-3xl bg-gray-50 p-2 rounded-full">{getItemImage(itemId)}</div>
+                                <Badge variant={collected >= qty ? "default" : "success"}>
+                                    {collected >= qty ? "Quota Full" : "Available"}
+                                </Badge>
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-lg">{getItemName(itemId)}</h3>
+                                <div className="flex justify-between items-end mt-2">
+                                    <div>
+                                        <p className="text-xs text-gray-500">Monthly Quota</p>
+                                        <p className="text-xl font-bold text-gray-800">{qty} <span className="text-sm font-normal text-gray-500">{getItemUnit(itemId)}</span></p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xs text-gray-500">Balance</p>
+                                        <p className="text-xl font-bold text-blue-600">{Math.max(0, qty - collected)}</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="mt-4 pt-4 border-t border-gray-100">
-                            <div className="flex justify-between text-sm">
-                                <span className="text-gray-500">Collected:</span>
-                                <span className="font-medium">0 {getItemUnit(itemId)}</span>
+                            <div className="mt-4 pt-4 border-t border-gray-100">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-500">Collected:</span>
+                                    <span className="font-medium">{collected} {getItemUnit(itemId)}</span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+                                    <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: `${progress}%` }}></div>
+                                </div>
                             </div>
-                            <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
-                                <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: '0%' }}></div>
-                            </div>
-                        </div>
-                    </Card>
-                ))}
+                        </Card>
+                    );
+                })}
             </div>
 
             {/* Recent Activity or Shop Status could go here */}
