@@ -7,6 +7,7 @@ import CitizenLayout from './components/Layout/CitizenLayout';
 import CitizenDashboard from './pages/citizen/Dashboard';
 import Prebook from './pages/citizen/Prebook';
 import Slots from './pages/citizen/Slots';
+import Stock from './pages/citizen/Stock';
 
 import Orders from './pages/citizen/Orders';
 import SmsSimulator from './pages/SmsSimulator';
@@ -44,6 +45,7 @@ function App() {
                             <Route index element={<Navigate to="dashboard" replace />} />
                             <Route path="dashboard" element={<CitizenDashboard />} />
                             <Route path="prebook" element={<Prebook />} />
+                            <Route path="stock" element={<Stock />} />
                             <Route path="slots" element={<Slots />} />
                             <Route path="orders" element={<Orders />} />
                             {/* Add more routes as needed */}
