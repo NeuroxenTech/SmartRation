@@ -84,6 +84,11 @@ export const api = {
         return MOCK_DATA.orders.filter(o => o.shopId === shopId);
     },
 
+    getUserOrders: async (userId) => {
+        await delay(500);
+        return MOCK_DATA.orders.filter(o => o.userId === userId);
+    },
+
     markOrderCollected: async (orderId) => {
         await delay(500);
         const order = MOCK_DATA.orders.find(o => o.id === orderId);

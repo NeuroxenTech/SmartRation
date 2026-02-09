@@ -48,7 +48,9 @@ export const MOCK_DATA = {
                 "i2": 200, // Sugar
                 "i3": 300, // Wheat
                 "i4": 100, // Oil
-                "i5": 150  // Dal
+                "i5": 150, // Dal
+                "i6": 50,  // Kerosene
+                "i7": 100  // Urad Dal
             }
         }
     ],
@@ -58,7 +60,9 @@ export const MOCK_DATA = {
         { id: "i2", name: "Sugar", unit: "kg", price: 13.50, image: "🍬" },
         { id: "i3", name: "Wheat", unit: "kg", price: 0, image: "🌾" },
         { id: "i4", name: "Palm Oil", unit: "ltr", price: 25, image: "🛢️" },
-        { id: "i5", name: "Toor Dal", unit: "kg", price: 30, image: "🥣" }
+        { id: "i5", name: "Toor Dal", unit: "kg", price: 30, image: "🥣" },
+        { id: "i6", name: "Kerosene", unit: "ltr", price: 15, image: "⛽" },
+        { id: "i7", name: "Urad Dal", unit: "kg", price: 30, image: "🥣" }
     ],
 
     entitlements: {
@@ -67,14 +71,18 @@ export const MOCK_DATA = {
             "i2": 2,  // 2kg Sugar
             "i3": 10,
             "i4": 1,
-            "i5": 2
+            "i5": 2,
+            "i6": 2,
+            "i7": 1
         },
         "NPHH": {
             "i1": 10,
             "i2": 1,
             "i3": 5,
             "i4": 1,
-            "i5": 1
+            "i5": 1,
+            "i6": 1,
+            "i7": 0
         }
     },
 
