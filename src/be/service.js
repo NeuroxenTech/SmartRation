@@ -78,6 +78,25 @@ export const api = {
         return { success: true, order: newOrder };
     },
 
+    createRazorpayOrder: async (amount) => {
+        await delay(500);
+        // In a real backend, we'd use the Key Secret here to create a secure order.
+        // For frontend-only mock, we just generate a random ID.
+        return {
+            id: `order_${Math.random().toString(36).substring(7)}`,
+            currency: "INR",
+            amount: amount * 100 // Amount in paise
+        };
+    },
+
+    verifyPayment: async (paymentId, orderId, signature) => {
+        await delay(500);
+        // Mock verification
+        // In real backend: generated_signature = hmac_sha256(order_id + "|" + payment_id, secret);
+        // if (generated_signature == signature) ...
+        return { success: true };
+    },
+
     // Operator Actions
     getShopOrders: async (shopId) => {
         await delay(500);
